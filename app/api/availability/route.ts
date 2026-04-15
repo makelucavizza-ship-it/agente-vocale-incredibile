@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { addDays, format, setHours, setMinutes, parseISO, isAfter } from "date-fns";
+import { it } from "date-fns/locale";
 
 export const dynamic = "force-dynamic";
 
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
           return current < bEnd && slotEnd > bStart;
         });
         if (!occupied) {
-          slots.push(`${format(day, "EEEE d MMMM")} alle ${format(current, "HH:mm")}`);
+          slots.push(`${format(day, "EEEE d MMMM", { locale: it })} alle ${format(current, "HH:mm")}`);
         }
       }
       current = new Date(current.getTime() + SLOT_INTERVAL * 60000);
