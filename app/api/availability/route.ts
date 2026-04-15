@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 import { supabaseAdmin } from "@/lib/supabase";
 import { addDays, format, setHours, setMinutes, parseISO, isAfter } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
