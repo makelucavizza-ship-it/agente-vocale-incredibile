@@ -1,26 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-
-export const dynamic = "force-dynamic";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { addDays, format, setHours, setMinutes, parseISO, isAfter } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
+export const dynamic = "force-dynamic";
+
 const TZ = "Europe/Rome";
-const SLOT_INTERVAL = 30; // minuti
+const SLOT_INTERVAL = 30;
 
 export async function POST(req: NextRequest) {
+  const db = getSupabaseAdmin();
   const { service, date } = await req.json();
 
-  // Recupera durata servizio
-  const { data: svc } = await supabaseAdmin
+  const { data: svc } = await db
     .from("services")
     .select("duration_minutes")
     .ilike("name", `%${service}%`)
     .single();
 
   const duration = svc?.duration_minutes ?? 60;
-
-  // Genera slot per i prossimi 3 giorni (o dalla data richiesta)
   const startDate = date ? parseISO(date) : new Date();
   const slots: string[] = [];
 
@@ -28,8 +26,7 @@ export async function POST(req: NextRequest) {
     const day = addDays(startDate, d);
     const dayOfWeek = day.getDay();
 
-    // Orari apertura
-    const { data: avail } = await supabaseAdmin
+    const { data: avail } = await db
       .from("availability")
       .select("open_time, close_time, is_open")
       .eq("day_of_week", dayOfWeek)
@@ -40,14 +37,12 @@ export async function POST(req: NextRequest) {
     const [openH, openM] = avail.open_time.split(":").map(Number);
     const [closeH, closeM] = avail.close_time.split(":").map(Number);
 
-    // Prenotazioni esistenti quel giorno
-    const { data: bookings } = await supabaseAdmin
+    const { data: bookings } = await db
       .from("bookings")
       .select("time_slot, duration_minutes")
       .eq("date", format(day, "yyyy-MM-dd"))
       .eq("status", "confirmed");
 
-    // Genera slot liberi
     let current = setMinutes(setHours(day, openH), openM);
     const close = setMinutes(setHours(day, closeH), closeM);
     const nowRome = toZonedTime(new Date(), TZ);
@@ -63,7 +58,7 @@ export async function POST(req: NextRequest) {
           return current < bEnd && slotEnd > bStart;
         });
         if (!occupied) {
-          slots.push(`${format(day, "EEEE d MMMM", { locale: undefined })} alle ${format(current, "HH:mm")}`);
+          slots.push(`${format(day, "EEEE d MMMM")} alle ${format(current, "HH:mm")}`);
         }
       }
       current = new Date(current.getTime() + SLOT_INTERVAL * 60000);

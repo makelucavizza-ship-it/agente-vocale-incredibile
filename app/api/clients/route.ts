@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
-import { supabaseAdmin } from "@/lib/supabase";
 
-// GET — cerca cliente per telefono (chiamato dall'agente)
 export async function GET(req: NextRequest) {
+  const db = getSupabaseAdmin();
   const phone = req.nextUrl.searchParams.get("phone");
   const search = req.nextUrl.searchParams.get("search");
 
   if (phone) {
-    const { data } = await supabaseAdmin
+    const { data } = await db
       .from("clients")
       .select("id, name, phone, notes")
       .eq("phone", phone)
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (search) {
-    const { data } = await supabaseAdmin
+    const { data } = await db
       .from("clients")
       .select("*, bookings(service, date, time_slot, status)")
       .or(`name.ilike.%${search}%,phone.ilike.%${search}%`)
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(data ?? []);
   }
 
-  const { data } = await supabaseAdmin
+  const { data } = await db
     .from("clients")
     .select("*")
     .order("created_at", { ascending: false });

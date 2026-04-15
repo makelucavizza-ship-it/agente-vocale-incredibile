@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
-import { supabaseAdmin } from "@/lib/supabase";
 
-// POST — crea prenotazione (chiamato dall'agente vocale)
 export async function POST(req: NextRequest) {
+  const db = getSupabaseAdmin();
   const { client_name, client_phone, service, date, time_slot } = await req.json();
 
   if (!client_name || !service || !date || !time_slot) {
     return NextResponse.json({ error: "Dati mancanti" }, { status: 400 });
   }
 
-  // Trova o crea cliente
   let clientId: string;
-  const { data: existing } = await supabaseAdmin
+  const { data: existing } = await db
     .from("clients")
     .select("id")
     .eq("phone", client_phone ?? "")
@@ -22,7 +21,7 @@ export async function POST(req: NextRequest) {
   if (existing) {
     clientId = existing.id;
   } else {
-    const { data: newClient, error } = await supabaseAdmin
+    const { data: newClient, error } = await db
       .from("clients")
       .insert({ name: client_name, phone: client_phone ?? null })
       .select("id")
@@ -31,14 +30,13 @@ export async function POST(req: NextRequest) {
     clientId = newClient.id;
   }
 
-  // Recupera durata servizio
-  const { data: svc } = await supabaseAdmin
+  const { data: svc } = await db
     .from("services")
     .select("duration_minutes")
     .ilike("name", `%${service}%`)
     .maybeSingle();
 
-  const { data: booking, error } = await supabaseAdmin
+  const { data: booking, error } = await db
     .from("bookings")
     .insert({
       client_id: clientId,
@@ -54,15 +52,16 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({
-    result: `Prenotazione confermata. ID: ${booking.id}. ${client_name} il ${date} alle ${time_slot} per ${service}.`,
+    result: `Prenotazione confermata. ${client_name} il ${date} alle ${time_slot} per ${service}.`,
     booking_id: booking.id,
   });
 }
 
-// GET — lista prenotazioni (dashboard)
 export async function GET(req: NextRequest) {
+  const db = getSupabaseAdmin();
   const date = req.nextUrl.searchParams.get("date");
-  let query = supabaseAdmin
+
+  let query = db
     .from("bookings")
     .select("*, clients(name, phone)")
     .order("time_slot");
