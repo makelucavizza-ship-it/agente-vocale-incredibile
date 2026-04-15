@@ -13,6 +13,7 @@ function nowInRome(): Date {
 }
 
 export async function POST(req: NextRequest) {
+  try {
   const db = getSupabaseAdmin();
   const { service, date } = await req.json();
 
@@ -74,4 +75,8 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ result: `Ecco le prime disponibilità: ${slots.slice(0, 4).join(", ")}.` });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }
