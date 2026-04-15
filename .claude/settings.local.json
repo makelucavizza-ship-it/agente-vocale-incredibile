@@ -9,7 +9,8 @@
       "Bash(node -e \"const d=require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\); const r=JSON.parse\\(d\\); console.log\\('ID:', r.id, '\\\\nNome:', r.name, '\\\\nErrore:', r.error || 'nessuno'\\);\")",
       "Bash(curl -s -X POST https://iiofigxkjirxxbsjzdju.supabase.co/rest/v1/rpc/exec_sql -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpb2ZpZ3hramlyeHhic2p6ZGp1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjI0NTcxNCwiZXhwIjoyMDkxODIxNzE0fQ.H1t12TS4mu-DkBS0n1ebIdPh6Zs9nq5LSVh5gbsRNdk' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpb2ZpZ3hramlyeHhic2p6ZGp1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjI0NTcxNCwiZXhwIjoyMDkxODIxNzE0fQ.H1t12TS4mu-DkBS0n1ebIdPh6Zs9nq5LSVh5gbsRNdk' -H 'Content-Type: application/json' -d '{\"query\":\"ALTER TABLE calls ADD COLUMN IF NOT EXISTS recording_url text;\"}')",
       "Bash(curl -s -X POST https://iiofigxkjirxxbsjzdju.supabase.co/rest/v1/rpc/sql -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpb2ZpZ3hramlyeHhic2p6ZGp1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjI0NTcxNCwiZXhwIjoyMDkxODIxNzE0fQ.H1t12TS4mu-DkBS0n1ebIdPh6Zs9nq5LSVh5gbsRNdk' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpb2ZpZ3hramlyeHhic2p6ZGp1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjI0NTcxNCwiZXhwIjoyMDkxODIxNzE0fQ.H1t12TS4mu-DkBS0n1ebIdPh6Zs9nq5LSVh5gbsRNdk' -H 'Content-Type: application/json' -d '{\"query\":\"ALTER TABLE calls ADD COLUMN IF NOT EXISTS recording_url text;\"}')",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

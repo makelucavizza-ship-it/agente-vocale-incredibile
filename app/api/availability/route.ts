@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { addDays, format, setHours, setMinutes, parseISO, isAfter } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
 
 export const dynamic = "force-dynamic";
 
-const TZ = "Europe/Rome";
 const SLOT_INTERVAL = 30;
+
+function nowInRome(): Date {
+  // Approssimazione UTC+1/+2 per Italy senza librerie esterne
+  const offset = new Date().toLocaleString("en-US", { timeZone: "Europe/Rome", hour12: false });
+  return new Date(offset);
+}
 
 export async function POST(req: NextRequest) {
   const db = getSupabaseAdmin();
@@ -21,6 +25,7 @@ export async function POST(req: NextRequest) {
   const duration = svc?.duration_minutes ?? 60;
   const startDate = date ? parseISO(date) : new Date();
   const slots: string[] = [];
+  const now = nowInRome();
 
   for (let d = 0; d < 3 && slots.length < 6; d++) {
     const day = addDays(startDate, d);
@@ -45,12 +50,11 @@ export async function POST(req: NextRequest) {
 
     let current = setMinutes(setHours(day, openH), openM);
     const close = setMinutes(setHours(day, closeH), closeM);
-    const nowRome = toZonedTime(new Date(), TZ);
 
     while (isAfter(close, current) && slots.length < 6) {
       const slotEnd = new Date(current.getTime() + duration * 60000);
       if (isAfter(slotEnd, close)) break;
-      if (isAfter(current, nowRome)) {
+      if (isAfter(current, now)) {
         const occupied = bookings?.some((b) => {
           const [bH, bM] = b.time_slot.split(":").map(Number);
           const bStart = setMinutes(setHours(day, bH), bM);
