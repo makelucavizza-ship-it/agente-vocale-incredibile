@@ -216,35 +216,79 @@ in orari non disponibili.
 
 ---
 
-## DASHBOARD — FUNZIONALITÀ
+## FUNZIONALITÀ PIANIFICATE
 
-### Home (/)
-- Riepilogo oggi: prenotazioni del giorno in ordine cronologico
-- Ultime chiamate ricevute con esito
-- Slot liberi rimasti oggi
+Tutte le feature sotto sono configurabili e disattivabili dall'estetista
+in /settings. Ogni feature ha un flag booleano su Supabase in
+business_settings. Prima di implementare qualsiasi automazione,
+controllare sempre che il flag corrispondente sia true.
 
-### Calendario (/calendar)
-- Vista settimanale stile Google Calendar
-- Slot colorati per servizio
-- Click su slot vuoto → form nuova prenotazione manuale
-- Click su prenotazione → dettaglio con opzione modifica/cancella
-- Navigazione settimana precedente/successiva
+### CRM e dati cliente
+- Scheda cliente CRM completa (storico, dati clinici, comportamento, segmentazione WhatsApp)
+- Badge no-show in scheda
+- Scheda cliente visibile prima della visita nel briefing
 
-### Chiamate (/calls)
-- Lista chiamate con data, durata, esito
-- Click → trascrizione completa + summary AI
-- Filtri per data e esito
+### Input vocale estetista via WhatsApp
+- Note vocali post-trattamento → aggiornamento scheda
+- Foto prima/dopo → storico visivo per prenotazione
+- Prenotazione via messaggio vocale
+- Nota su cliente senza appuntamento attivo
+- Riepilogo vocale fine giornata → dashboard
+- Feedback cliente a voce → scheda + visita successiva
+- Gestione scorte con alert sotto soglia
 
-### Clienti (/clients)
-- Lista clienti con storico prenotazioni
-- Ricerca per nome o telefono
-- Scheda cliente con note
+### Intelligenza operativa
+- Briefing mattutino automatico via WhatsApp
+- Rilevamento clienti a rischio abbandono + messaggio pronto
+- Suggerimento trattamento successivo a fine prenotazione
+- Analisi sentiment chiamate
+- Report mensile narrativo (Claude)
+- Previsione fatturato 30 giorni
+- Selettore modalità business (acquisizione / scontrino / fidelizzazione /
+  prezzi / riattivazione / reputazione) con obiettivo numerico e tracking
+- Vista efficienza giornata
+- Analisi redditività per servizio
+- Stagionalità servizi
 
-### Impostazioni (/settings)
-- **Orari apertura** — per giorno della settimana
-- **Servizi** — nome, durata, prezzo, attivo/inattivo
-- **Agente** — nome agente, tono, info centro
-- **Integrazioni** — API keys (Retell, ElevenLabs)
+### Gestione appuntamenti
+- Reminder 24h con conferma — slot liberato se non risponde
+- Lista d'attesa intelligente su cancellazione
+
+### Esperienza cliente
+- Rituale di benvenuto prima visita
+- WhatsApp post-trattamento con consigli specifici
+- Anniversario prima visita
+- Compleanno 3 giorni prima
+- Sorpresa inaspettata da momenti di vita rilevati
+- Consiglio stagionale su profilo completo
+- Tessera fedeltà invisibile al quinto trattamento
+- Diario della pelle via WhatsApp
+
+### Acquisizione
+- Passaparola amplificato post-trattamento
+- Google reviews automatizzate (solo clienti giuste)
+- Lista d'attesa come leva di desiderabilità
+- Partnership locali con QR tracciabile
+- Contenuto educativo broadcast mensile
+- Reminder TikTok/Reels settimanale con suggerimento argomento
+
+### Settings — business_settings su Supabase
+Ogni feature ha un flag. Schema minimo:
+```json
+{
+  "crm_enabled": true, "badge_noshow": true, "briefing_wa": true,
+  "voice_notes": true, "photo_before_after": true, "voice_booking": true,
+  "voice_stock": true, "sentiment_analysis": true, "monthly_report": true,
+  "revenue_forecast": true, "business_mode": true, "efficiency_view": true,
+  "profitability_view": true, "seasonality_view": true, "reminder_24h": true,
+  "smart_waitlist": true, "welcome_ritual": true, "post_treatment_wa": true,
+  "anniversary_msg": true, "birthday_msg": true, "life_moment_surprise": true,
+  "seasonal_advice": true, "loyalty_invisible": true, "skin_diary": true,
+  "referral_amplified": true, "google_reviews_auto": true,
+  "scarcity_waitlist": true, "partnership_qr": true,
+  "educational_broadcast": true, "social_reminder": true
+}
+```
 
 ---
 
