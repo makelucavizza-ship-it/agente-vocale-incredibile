@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { format, parseISO } from "date-fns";
 import { it } from "date-fns/locale";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -40,12 +41,21 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
               const bookings = (c.bookings as { service: string; date: string; time_slot: string; status: string }[]) ?? [];
               const active = bookings.filter(b => b.status === "confirmed");
               return (
-                <li key={c.id} className="px-6 py-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{c.name}</p>
+                <li key={c.id}>
+                  <Link href={`/dashboard/clients/${c.id}`} className="px-6 py-4 flex items-start justify-between hover:bg-gray-50/60 transition-colors block">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-medium text-gray-900">{c.name}</p>
+                        {(c as { skin_type?: string }).skin_type && (
+                          <span className="text-[10px] bg-violet-50 text-violet-600 px-1.5 py-0.5 rounded-full">
+                            {(c as { skin_type?: string }).skin_type}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-400 mt-0.5">{c.phone ?? "—"}</p>
-                      {c.notes && <p className="text-xs text-gray-500 mt-1 italic">{c.notes}</p>}
+                      {(c as { allergies?: string }).allergies && (
+                        <p className="text-xs text-amber-600 mt-0.5">⚠ {(c as { allergies?: string }).allergies}</p>
+                      )}
                       {active.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1">
                           {active.slice(0, 3).map((b, i) => (
@@ -56,8 +66,8 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400">{active.length} prenotazion{active.length === 1 ? "e" : "i"}</p>
-                  </div>
+                    <p className="text-xs text-gray-400 shrink-0 ml-2">{active.length} pren.</p>
+                  </Link>
                 </li>
               );
             })}

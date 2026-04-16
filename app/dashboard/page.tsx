@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
-import { format, addDays } from "date-fns";
+import { format, addDays, parseISO } from "date-fns";
 import { it } from "date-fns/locale";
+import Link from "next/link";
 import NewBookingModal from "./components/NewBookingModal";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export default async function DashboardPage() {
   const dates = [0, 1, 2].map(d => format(addDays(today, d), "yyyy-MM-dd"));
 
   const [{ data: bookings }, { data: calls }, { data: services }] = await Promise.all([
-    db.from("bookings").select("*, clients(name, phone)")
+    db.from("bookings").select("*, clients(id, name, phone, skin_type, allergies)")
       .in("date", dates).eq("status", "confirmed").order("date").order("time_slot"),
     db.from("calls").select("*").order("created_at", { ascending: false }).limit(5),
     db.from("services").select("*").eq("active", true).order("name"),
@@ -75,6 +76,46 @@ export default async function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Briefing prossimo appuntamento */}
+      {(() => {
+        const now = new Date();
+        const nowStr = format(now, "HH:mm");
+        const next = todayBookings.find(b => (b.time_slot ?? "00:00") >= nowStr);
+        if (!next) return null;
+        type C = { id: string; name: string; phone?: string; skin_type?: string; allergies?: string } | null;
+        const c = next.clients as C;
+        return (
+          <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100 rounded-2xl p-5 mb-6">
+            <p className="text-xs font-medium text-violet-500 uppercase tracking-wide mb-2">Prossimo appuntamento</p>
+            <div className="flex items-start justify-between flex-wrap gap-3">
+              <div>
+                <p className="font-semibold text-gray-900">{c?.name ?? "—"}</p>
+                <p className="text-sm text-gray-500 mt-0.5">{next.service} · <span className="font-mono">{next.time_slot?.slice(0,5)}</span></p>
+                {c?.phone && <p className="text-xs text-gray-400 mt-0.5">{c.phone}</p>}
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {c?.skin_type && (
+                    <span className="text-xs bg-white text-violet-600 px-2 py-0.5 rounded-full border border-violet-100">
+                      Pelle {c.skin_type}
+                    </span>
+                  )}
+                  {c?.allergies && (
+                    <span className="text-xs bg-white text-amber-600 px-2 py-0.5 rounded-full border border-amber-100">
+                      ⚠ {c.allergies}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {c?.id && (
+                <Link href={`/dashboard/clients/${c.id}`}
+                  className="text-xs text-violet-600 hover:text-violet-800 font-medium">
+                  Scheda →
+                </Link>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="space-y-3 mb-6">
         {bookingsByDay.map(({ date, label, items }) => (
