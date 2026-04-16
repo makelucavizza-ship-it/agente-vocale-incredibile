@@ -7,6 +7,7 @@ const DAYS = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Vene
 
 interface Avail { day_of_week: number; open_time: string; close_time: string; is_open: boolean; }
 interface Service { id: string; name: string; duration_minutes: number; price: number; active: boolean; }
+interface Closure { id: string; date: string; reason?: string | null; }
 interface ConfigField { key: string; label: string; placeholder?: string; type?: string; rows?: number; }
 
 interface FeatureFlag {
@@ -162,10 +163,12 @@ export default function SettingsForm({
   availability,
   services,
   businessSettings = {},
+  closures: initialClosures = [],
 }: {
   availability: Avail[];
   services: Service[];
   businessSettings?: Record<string, boolean>;
+  closures?: Closure[];
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState<string | null>(null);
@@ -178,12 +181,72 @@ export default function SettingsForm({
   const [configSaving, setConfigSaving] = useState(false);
   const [configSaved, setConfigSaved] = useState(false);
 
+  // Closures
+  const [closures, setClosures] = useState<Closure[]>(initialClosures);
+  const [newClosure, setNewClosure] = useState({ date: "", reason: "" });
+  const [addingClosure, setAddingClosure] = useState(false);
+
+  // Services CRUD
+  const [newSvc, setNewSvc] = useState({ name: "", duration_minutes: 60, price: 0 });
+  const [addingSvc, setAddingSvc] = useState(false);
+  const [showAddSvc, setShowAddSvc] = useState(false);
+  const [deletingSvc, setDeletingSvc] = useState<string | null>(null);
+
   useEffect(() => {
     fetch("/api/feature-config")
       .then(r => r.json())
       .then(data => setFeatureConfigs(data))
       .catch(() => {});
   }, []);
+
+  async function addClosure() {
+    if (!newClosure.date) return;
+    setAddingClosure(true);
+    const res = await fetch("/api/closures", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newClosure),
+    });
+    const data = await res.json();
+    if (!data.error) {
+      setClosures(prev => [...prev, data].sort((a, b) => a.date.localeCompare(b.date)));
+      setNewClosure({ date: "", reason: "" });
+    }
+    setAddingClosure(false);
+  }
+
+  async function deleteClosure(id: string) {
+    setClosures(prev => prev.filter(c => c.id !== id));
+    await fetch(`/api/closures?id=${id}`, { method: "DELETE" });
+  }
+
+  async function addSvc() {
+    if (!newSvc.name.trim()) return;
+    setAddingSvc(true);
+    const res = await fetch("/api/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "service", data: newSvc }),
+    });
+    const data = await res.json();
+    if (!data.error) {
+      setSvcs(prev => [...prev, data]);
+      setNewSvc({ name: "", duration_minutes: 60, price: 0 });
+      setShowAddSvc(false);
+    }
+    setAddingSvc(false);
+  }
+
+  async function deleteSvc(id: string) {
+    setDeletingSvc(id);
+    const res = await fetch("/api/settings", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "service", id }),
+    });
+    if (res.ok) setSvcs(prev => prev.filter(s => s.id !== id));
+    setDeletingSvc(null);
+  }
 
   async function saveAvail(row: Avail) {
     setSaving(`avail-${row.day_of_week}`);
@@ -335,6 +398,53 @@ export default function SettingsForm({
             </li>
           ))}
         </ul>
+
+        {/* Chiusure / Ferie */}
+        <div className="border-t border-gray-100 px-4 py-4">
+          <p className="text-xs font-medium text-gray-700 mb-3">Chiusure e ferie</p>
+          {closures.length > 0 && (
+            <ul className="space-y-2 mb-3">
+              {closures.map(c => (
+                <li key={c.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                  <div>
+                    <span className="text-sm text-gray-900">
+                      {new Date(c.date + "T12:00:00").toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}
+                    </span>
+                    {c.reason && <span className="text-xs text-gray-400 ml-2">· {c.reason}</span>}
+                  </div>
+                  <button onClick={() => deleteClosure(c.id)} className="text-gray-300 hover:text-red-400 transition-colors ml-3">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={newClosure.date}
+                onChange={e => setNewClosure(p => ({ ...p, date: e.target.value }))}
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300"
+              />
+              <input
+                placeholder="Motivo (opzionale)"
+                value={newClosure.reason}
+                onChange={e => setNewClosure(p => ({ ...p, reason: e.target.value }))}
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300"
+              />
+            </div>
+            <button
+              onClick={addClosure}
+              disabled={!newClosure.date || addingClosure}
+              className="w-full text-sm py-2 border border-dashed border-gray-300 text-gray-500 rounded-lg hover:border-violet-400 hover:text-violet-600 disabled:opacity-40 transition-colors"
+            >
+              {addingClosure ? "Aggiunta..." : "+ Aggiungi giorno di chiusura"}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Servizi */}
@@ -380,14 +490,76 @@ export default function SettingsForm({
                 <button
                   onClick={() => saveSvc(svcs[i])}
                   disabled={saving === `svc-${s.id}`}
-                  className="ml-auto text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50"
+                  className="text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50"
                 >
                   {saving === `svc-${s.id}` ? "..." : "Salva"}
+                </button>
+                <button
+                  onClick={() => deleteSvc(s.id)}
+                  disabled={deletingSvc === s.id}
+                  className="text-gray-300 hover:text-red-400 disabled:opacity-40 transition-colors"
+                  title="Elimina servizio"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
                 </button>
               </div>
             </li>
           ))}
         </ul>
+
+        {/* Aggiungi servizio */}
+        <div className="border-t border-gray-100 px-4 py-4">
+          {showAddSvc ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <input
+                  placeholder="Nome servizio *"
+                  value={newSvc.name}
+                  onChange={e => setNewSvc(p => ({ ...p, name: e.target.value }))}
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={newSvc.duration_minutes}
+                  onChange={e => setNewSvc(p => ({ ...p, duration_minutes: +e.target.value }))}
+                  className="w-16 border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300"
+                />
+                <span className="text-xs text-gray-400">min</span>
+                <span className="text-xs text-gray-400 pl-1">€</span>
+                <input
+                  type="number"
+                  value={newSvc.price}
+                  onChange={e => setNewSvc(p => ({ ...p, price: +e.target.value }))}
+                  className="w-20 border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300"
+                />
+                <button
+                  onClick={addSvc}
+                  disabled={!newSvc.name.trim() || addingSvc}
+                  className="ml-auto text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50"
+                >
+                  {addingSvc ? "..." : "Aggiungi"}
+                </button>
+                <button onClick={() => { setShowAddSvc(false); setNewSvc({ name: "", duration_minutes: 60, price: 0 }); }}
+                  className="text-gray-300 hover:text-gray-500">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowAddSvc(true)}
+              className="w-full text-sm py-2 border border-dashed border-gray-300 text-gray-500 rounded-lg hover:border-violet-400 hover:text-violet-600 transition-colors"
+            >
+              + Aggiungi servizio
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Feature flags */}
