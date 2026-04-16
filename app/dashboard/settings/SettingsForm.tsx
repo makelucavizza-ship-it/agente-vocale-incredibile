@@ -78,45 +78,47 @@ export default function SettingsForm({
         </div>
         <ul className="divide-y divide-gray-100">
           {avail.map((a, i) => (
-            <li key={a.day_of_week} className="px-4 sm:px-6 py-3 flex flex-wrap items-center gap-2 sm:gap-4">
-              <span className="text-sm text-gray-700 w-20 sm:w-24 shrink-0">{DAYS[a.day_of_week]}</span>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={a.is_open}
-                  onChange={e => {
-                    const updated = [...avail];
-                    updated[i] = { ...a, is_open: e.target.checked };
-                    setAvail(updated);
-                  }}
-                  className="accent-violet-600"
-                />
-                <span className="text-xs text-gray-500">Aperto</span>
-              </label>
-              <div className="flex items-center gap-2">
+            <li key={a.day_of_week} className="px-4 py-3 space-y-2">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-700 w-20 shrink-0">{DAYS[a.day_of_week]}</span>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={a.is_open}
+                    onChange={e => {
+                      const updated = [...avail];
+                      updated[i] = { ...a, is_open: e.target.checked };
+                      setAvail(updated);
+                    }}
+                    className="accent-violet-600 w-4 h-4"
+                  />
+                  <span className="text-xs text-gray-500">Aperto</span>
+                </label>
+                <button
+                  onClick={() => saveAvail(avail[i])}
+                  disabled={saving === `avail-${a.day_of_week}`}
+                  className="ml-auto text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50"
+                >
+                  {saving === `avail-${a.day_of_week}` ? "..." : "Salva"}
+                </button>
+              </div>
+              <div className={`flex items-center gap-2 ${!a.is_open ? "opacity-40" : ""}`}>
                 <input
                   type="time"
                   value={a.open_time?.slice(0, 5) ?? "09:00"}
                   disabled={!a.is_open}
                   onChange={e => { const u = [...avail]; u[i] = { ...a, open_time: e.target.value }; setAvail(u); }}
-                  className="border border-gray-200 rounded-lg px-2 py-1 text-sm disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-violet-300"
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-violet-300"
                 />
-                <span className="text-xs text-gray-400">–</span>
+                <span className="text-xs text-gray-400 shrink-0">–</span>
                 <input
                   type="time"
                   value={a.close_time?.slice(0, 5) ?? "18:00"}
                   disabled={!a.is_open}
                   onChange={e => { const u = [...avail]; u[i] = { ...a, close_time: e.target.value }; setAvail(u); }}
-                  className="border border-gray-200 rounded-lg px-2 py-1 text-sm disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-violet-300"
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-violet-300"
                 />
               </div>
-              <button
-                onClick={() => saveAvail(avail[i])}
-                disabled={saving === `avail-${a.day_of_week}`}
-                className="ml-auto text-xs px-3 py-1 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50"
-              >
-                {saving === `avail-${a.day_of_week}` ? "..." : "Salva"}
-              </button>
             </li>
           ))}
         </ul>
@@ -129,42 +131,47 @@ export default function SettingsForm({
         </div>
         <ul className="divide-y divide-gray-100">
           {svcs.map((s, i) => (
-            <li key={s.id} className="px-6 py-3 flex items-center gap-3 flex-wrap">
-              <input
-                value={s.name}
-                onChange={e => { const u = [...svcs]; u[i] = { ...s, name: e.target.value }; setSvcs(u); }}
-                className="border border-gray-200 rounded-lg px-2 py-1 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-violet-300"
-              />
-              <input
-                type="number"
-                value={s.duration_minutes}
-                onChange={e => { const u = [...svcs]; u[i] = { ...s, duration_minutes: +e.target.value }; setSvcs(u); }}
-                className="border border-gray-200 rounded-lg px-2 py-1 text-sm w-16 focus:outline-none focus:ring-2 focus:ring-violet-300"
-              />
-              <span className="text-xs text-gray-400">min</span>
-              <span className="text-xs text-gray-400">€</span>
-              <input
-                type="number"
-                value={s.price}
-                onChange={e => { const u = [...svcs]; u[i] = { ...s, price: +e.target.value }; setSvcs(u); }}
-                className="border border-gray-200 rounded-lg px-2 py-1 text-sm w-16 focus:outline-none focus:ring-2 focus:ring-violet-300"
-              />
-              <label className="flex items-center gap-1 cursor-pointer">
+            <li key={s.id} className="px-4 py-3 space-y-2">
+              <div className="flex items-center gap-2">
                 <input
-                  type="checkbox"
-                  checked={s.active}
-                  onChange={e => { const u = [...svcs]; u[i] = { ...s, active: e.target.checked }; setSvcs(u); }}
-                  className="accent-violet-600"
+                  value={s.name}
+                  placeholder="Nome servizio"
+                  onChange={e => { const u = [...svcs]; u[i] = { ...s, name: e.target.value }; setSvcs(u); }}
+                  className="flex-1 min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300"
                 />
-                <span className="text-xs text-gray-500">Attivo</span>
-              </label>
-              <button
-                onClick={() => saveSvc(svcs[i])}
-                disabled={saving === `svc-${s.id}`}
-                className="ml-auto text-xs px-3 py-1 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50"
-              >
-                {saving === `svc-${s.id}` ? "..." : "Salva"}
-              </button>
+                <label className="flex items-center gap-1.5 cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={s.active}
+                    onChange={e => { const u = [...svcs]; u[i] = { ...s, active: e.target.checked }; setSvcs(u); }}
+                    className="accent-violet-600 w-4 h-4"
+                  />
+                  <span className="text-xs text-gray-500">Attivo</span>
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={s.duration_minutes}
+                  onChange={e => { const u = [...svcs]; u[i] = { ...s, duration_minutes: +e.target.value }; setSvcs(u); }}
+                  className="w-16 border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300"
+                />
+                <span className="text-xs text-gray-400">min</span>
+                <span className="text-xs text-gray-400 pl-1">€</span>
+                <input
+                  type="number"
+                  value={s.price}
+                  onChange={e => { const u = [...svcs]; u[i] = { ...s, price: +e.target.value }; setSvcs(u); }}
+                  className="w-20 border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300"
+                />
+                <button
+                  onClick={() => saveSvc(svcs[i])}
+                  disabled={saving === `svc-${s.id}`}
+                  className="ml-auto text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50"
+                >
+                  {saving === `svc-${s.id}` ? "..." : "Salva"}
+                </button>
+              </div>
             </li>
           ))}
         </ul>
