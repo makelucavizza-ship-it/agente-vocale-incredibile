@@ -30,7 +30,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-56 bg-white border-r border-gray-100 flex flex-col fixed top-0 bottom-0 shadow-sm">
+    <aside className="w-56 bg-white border-r border-gray-100 hidden md:flex flex-col fixed top-0 bottom-0 shadow-sm">
       <div className="px-5 py-5 border-b border-gray-100">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shrink-0">

@@ -24,17 +24,17 @@ export default async function CallsPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="max-w-4xl">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">Chiamate</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <input
             type="date"
             defaultValue={date ?? ""}
             onChange={() => {}}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-violet-300"
+            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-violet-300 w-full sm:w-auto"
             // handled via links below
           />
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             {OUTCOMES.map(o => (
               <Link
                 key={o.value}

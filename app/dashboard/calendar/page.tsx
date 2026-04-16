@@ -54,8 +54,8 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-2xl font-semibold text-gray-900">Calendario</h1>
           <div className="flex items-center gap-1">
             <Link href={`/dashboard/calendar?week=${prevWeek}`}
@@ -72,7 +72,8 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         <NewBookingModal services={services ?? []} />
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="overflow-x-auto">
+      <div className="min-w-[560px] bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="grid grid-cols-7 border-b border-gray-200">
           <div className="py-3 px-2 text-xs text-gray-400" />
           {days.map(day => {
@@ -111,6 +112,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
             </div>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -37,8 +37,8 @@ export default function SettingsForm({ availability, services }: { availability:
         </div>
         <ul className="divide-y divide-gray-100">
           {avail.map((a, i) => (
-            <li key={a.day_of_week} className="px-6 py-3 flex items-center gap-4">
-              <span className="text-sm text-gray-700 w-24 shrink-0">{DAYS[a.day_of_week]}</span>
+            <li key={a.day_of_week} className="px-4 sm:px-6 py-3 flex flex-wrap items-center gap-2 sm:gap-4">
+              <span className="text-sm text-gray-700 w-20 sm:w-24 shrink-0">{DAYS[a.day_of_week]}</span>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -52,21 +52,23 @@ export default function SettingsForm({ availability, services }: { availability:
                 />
                 <span className="text-xs text-gray-500">Aperto</span>
               </label>
-              <input
-                type="time"
-                value={a.open_time?.slice(0, 5) ?? "09:00"}
-                disabled={!a.is_open}
-                onChange={e => { const u = [...avail]; u[i] = { ...a, open_time: e.target.value }; setAvail(u); }}
-                className="border border-gray-200 rounded-lg px-2 py-1 text-sm disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-violet-300"
-              />
-              <span className="text-xs text-gray-400">–</span>
-              <input
-                type="time"
-                value={a.close_time?.slice(0, 5) ?? "18:00"}
-                disabled={!a.is_open}
-                onChange={e => { const u = [...avail]; u[i] = { ...a, close_time: e.target.value }; setAvail(u); }}
-                className="border border-gray-200 rounded-lg px-2 py-1 text-sm disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-violet-300"
-              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="time"
+                  value={a.open_time?.slice(0, 5) ?? "09:00"}
+                  disabled={!a.is_open}
+                  onChange={e => { const u = [...avail]; u[i] = { ...a, open_time: e.target.value }; setAvail(u); }}
+                  className="border border-gray-200 rounded-lg px-2 py-1 text-sm disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-violet-300"
+                />
+                <span className="text-xs text-gray-400">–</span>
+                <input
+                  type="time"
+                  value={a.close_time?.slice(0, 5) ?? "18:00"}
+                  disabled={!a.is_open}
+                  onChange={e => { const u = [...avail]; u[i] = { ...a, close_time: e.target.value }; setAvail(u); }}
+                  className="border border-gray-200 rounded-lg px-2 py-1 text-sm disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-violet-300"
+                />
+              </div>
               <button
                 onClick={() => saveAvail(avail[i])}
                 disabled={saving === `avail-${a.day_of_week}`}

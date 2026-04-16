@@ -56,7 +56,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-4xl">
-      <div className="mb-8 flex items-start justify-between">
+      <div className="mb-8 flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Buongiorno</h1>
           <p className="text-gray-400 text-sm mt-1 capitalize">{todayLabel}</p>
@@ -64,7 +64,7 @@ export default async function DashboardPage() {
         <NewBookingModal services={services ?? []} />
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {stats.map(s => (
           <div key={s.label} className={`${s.bg} rounded-2xl p-5 text-white`}>
             <div className="flex items-center justify-between mb-3">
