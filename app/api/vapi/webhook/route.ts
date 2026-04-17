@@ -1,17 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  // ── Verifica firma VAPI ──────────────────────────────────────────────
+  const signature = req.headers.get("x-vapi-signature");
+  const rawBody = await req.text();
+  const secret = process.env.VAPI_WEBHOOK_SECRET;
+
+  if (secret) {
+    const expected = crypto
+      .createHmac("sha256", secret)
+      .update(rawBody)
+      .digest("hex");
+    if (signature !== expected) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
+  const body = JSON.parse(rawBody);
   const { message } = body;
 
   if (!message) return NextResponse.json({ ok: true });
 
   // ── Tool calls ───────────────────────────────────────────────────────
   if (message.type === "tool-calls") {
-    const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const base = process.env.NEXT_PUBLIC_SITE_URL;
+    if (!base) {
+      console.error("[vapi/webhook] NEXT_PUBLIC_SITE_URL non configurato");
+      return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+    }
 
     const results = await Promise.all(
       message.toolCallList.map(async (call: { id: string; name: string; arguments: Record<string, string> }) => {
@@ -32,13 +52,21 @@ export async function POST(req: NextRequest) {
             });
             result = (await res.json()).result;
           } else if (call.name === "get_client_info") {
-            const res = await fetch(`${base}/api/clients?phone=${call.arguments.phone ?? ""}`);
+            // POST body invece di query string per non loggare il numero nei server log
+            const res = await fetch(`${base}/api/clients/lookup`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ phone: call.arguments.phone ?? "" }),
+            });
             const data = await res.json();
-            result = data ? `Cliente già registrata: ${data.name}.` : "Cliente non trovata in archivio.";
+            result = data?.name
+              ? `Cliente già registrata: ${data.name}.`
+              : "Cliente non trovata in archivio.";
           } else if (call.name === "end_call") {
             result = "Arrivederci!";
           }
-        } catch {
+        } catch (err) {
+          console.error("[vapi/webhook] tool call error:", err);
           result = "Errore tecnico, mi dispiace.";
         }
         return { toolCallId: call.id, result };
@@ -59,7 +87,7 @@ export async function POST(req: NextRequest) {
       ? "info"
       : "dropped";
 
-    await db.from("calls").insert({
+    const { error } = await db.from("calls").insert({
       vapi_call_id: call?.id ?? null,
       client_phone: call?.customer?.number ?? null,
       duration_seconds:
@@ -71,6 +99,8 @@ export async function POST(req: NextRequest) {
       outcome,
       recording_url: recordingUrl ?? null,
     });
+
+    if (error) console.error("[vapi/webhook] insert calls error:", error.message);
   }
 
   return NextResponse.json({ ok: true });
