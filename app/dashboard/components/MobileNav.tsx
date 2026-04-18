@@ -35,7 +35,7 @@ export default function MobileNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex md:hidden z-50">
       {nav.map(item => {
-        const active = pathname === item.href;
+        const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
         return (
           <Link
             key={item.href}

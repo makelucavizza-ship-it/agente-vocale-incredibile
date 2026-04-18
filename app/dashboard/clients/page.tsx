@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { format, parseISO } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
+import NewClientButton from "./NewClientButton";
 
 export const dynamic = "force-dynamic";
 
@@ -16,9 +17,12 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className="max-w-4xl">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Clienti</h1>
-        <p className="text-sm text-gray-400">{clients?.length ?? 0} totali</p>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Clienti</h1>
+          <p className="text-sm text-gray-400 mt-0.5">{clients?.length ?? 0} totali</p>
+        </div>
+        <NewClientButton />
       </div>
 
       <form method="GET" className="mb-4">

@@ -115,13 +115,14 @@ export default function ClientForm({ client }: { client: Client }) {
             onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
           />
         </div>
-        <div className="flex justify-end">
+        {/* Sticky save on mobile, inline on desktop */}
+        <div className="fixed bottom-20 left-0 right-0 px-4 md:static md:px-0 md:flex md:justify-end z-20 pointer-events-none">
           <button
             type="submit"
             disabled={saving}
-            className="px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 disabled:opacity-50"
+            className="pointer-events-auto w-full md:w-auto px-6 py-3 md:py-2 bg-violet-600 text-white text-sm font-semibold rounded-xl md:rounded-lg shadow-lg md:shadow-none hover:bg-violet-700 disabled:opacity-50 transition-colors"
           >
-            {saved ? "Salvato ✓" : saving ? "Salvo..." : "Salva"}
+            {saved ? "Salvato ✓" : saving ? "Salvo..." : "Salva scheda"}
           </button>
         </div>
       </form>
