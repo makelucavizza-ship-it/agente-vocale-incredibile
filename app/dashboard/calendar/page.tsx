@@ -3,6 +3,7 @@ import { format, startOfWeek, addDays, addWeeks, subWeeks, parseISO } from "date
 import { it } from "date-fns/locale";
 import Link from "next/link";
 import NewBookingModal from "../components/NewBookingModal";
+import BookingSlot from "./BookingSlot";
 
 export const dynamic = "force-dynamic";
 
@@ -101,10 +102,11 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
                 return (
                   <div key={day.toISOString()} className="border-l border-gray-100 p-1">
                     {slots.map(b => (
-                      <div key={b.id} className={`text-xs rounded px-1.5 py-1 mb-1 border ${colorForService(b.service)}`}>
-                        <p className="font-medium truncate">{(b.clients as { name: string } | null)?.name ?? "—"}</p>
-                        <p className="truncate opacity-70">{b.service}</p>
-                      </div>
+                      <BookingSlot
+                        key={b.id}
+                        booking={b as Parameters<typeof BookingSlot>[0]["booking"]}
+                        colorClass={colorForService(b.service)}
+                      />
                     ))}
                   </div>
                 );
