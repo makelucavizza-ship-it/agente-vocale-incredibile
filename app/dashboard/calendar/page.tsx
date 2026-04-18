@@ -4,6 +4,7 @@ import { it } from "date-fns/locale";
 import Link from "next/link";
 import NewBookingModal from "../components/NewBookingModal";
 import BookingSlot from "./BookingSlot";
+import CalendarMobileView from "./CalendarMobileView";
 
 export const dynamic = "force-dynamic";
 
@@ -40,10 +41,15 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
   const nextWeek = format(addWeeks(weekStart, 1), "yyyy-MM-dd");
 
   const [{ data: bookings }, { data: services }] = await Promise.all([
-    db.from("bookings").select("*, clients(name)")
+    db.from("bookings").select("*, clients(name, phone, allergies)")
       .gte("date", from).lte("date", to).eq("status", "confirmed"),
     db.from("services").select("*").eq("active", true).order("name"),
   ]);
+
+  const enrichedBookings = bookings?.map(b => ({
+    ...b,
+    colorClass: colorForService(b.service),
+  })) ?? [];
 
   function bookingsForDayHour(day: Date, hour: number) {
     const dateStr = format(day, "yyyy-MM-dd");
@@ -73,7 +79,13 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         <NewBookingModal services={services ?? []} />
       </div>
 
-      <div className="overflow-x-auto">
+      <CalendarMobileView
+        bookings={enrichedBookings as Parameters<typeof CalendarMobileView>[0]["bookings"]}
+        weekStartStr={from}
+        today={today}
+      />
+
+      <div className="overflow-x-auto hidden md:block">
       <div className="min-w-[560px] bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="grid grid-cols-7 border-b border-gray-200">
           <div className="py-3 px-2 text-xs text-gray-400" />

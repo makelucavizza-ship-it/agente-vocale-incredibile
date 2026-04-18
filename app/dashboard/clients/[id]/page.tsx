@@ -4,6 +4,7 @@ import { it } from "date-fns/locale";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ClientTabs from "./ClientTabs";
+import ClientBookingButton from "./ClientBookingButton";
 
 export const dynamic = "force-dynamic";
 
@@ -15,11 +16,10 @@ export default async function ClientPage({
   const db = getSupabaseAdmin();
   const { id } = await params;
 
-  const { data: client } = await db
-    .from("clients")
-    .select("*, bookings(id, service, date, time_slot, status, source)")
-    .eq("id", id)
-    .single();
+  const [{ data: client }, { data: services }] = await Promise.all([
+    db.from("clients").select("*, bookings(id, service, date, time_slot, status, source)").eq("id", id).single(),
+    db.from("services").select("*").eq("active", true).order("name"),
+  ]);
 
   if (!client) notFound();
 
@@ -51,13 +51,19 @@ export default async function ClientPage({
   return (
     <div className="max-w-2xl">
       {/* Back */}
-      <div className="mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <Link href="/dashboard/clients" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
           Clienti
         </Link>
+        <ClientBookingButton
+          clientId={client.id}
+          clientName={client.name}
+          clientPhone={(client as { phone?: string }).phone}
+          services={services ?? []}
+        />
       </div>
 
       {/* Hero card */}
@@ -130,6 +136,7 @@ export default async function ClientPage({
         noShows={noShows}
         visiteEffettuate={visiteEffettuate}
         lastVisit={lastVisit}
+        services={services ?? []}
       />
     </div>
   );

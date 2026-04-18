@@ -25,12 +25,15 @@ interface Booking {
   source: string;
 }
 
+interface Service { id: string; name: string; duration_minutes: number; price: number; }
+
 interface Props {
   client: Client;
   bookings: Booking[];
   noShows: number;
   visiteEffettuate: number;
   lastVisit: Booking | undefined;
+  services: Service[];
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -52,7 +55,7 @@ const SKIN_LABELS: Record<string, string> = {
   mista: "Mista", sensibile: "Sensibile",
 };
 
-export default function ClientTabs({ client, bookings, noShows, visiteEffettuate, lastVisit }: Props) {
+export default function ClientTabs({ client, bookings, noShows, visiteEffettuate, lastVisit, services }: Props) {
   const [tab, setTab] = useState<"profilo" | "storico">("profilo");
 
   return (
